@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Halftonix Pro</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0d;--panel:#111;--card:#181818;--border:#2a2030;
+  --accent:#e040fb;--accent-dim:#7b2ff7;--gold:#ffd740;
+  --accent-glow:rgba(224,64,251,.35);--text:#e0e0e0;--muted:#555;--muted2:#888;
+  --header:38px;--sidebar:240px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:12px;overflow:hidden}
+.header{height:var(--header);display:flex;align-items:center;background:#0a0a0a;border-bottom:1px solid var(--border);padding:0 16px;flex-shrink:0}
+.logo{font-size:15px;font-weight:700;color:#fff}.logo em{font-style:italic;color:var(--accent)}
+.hdr-info{margin-left:auto;font-size:10px;color:var(--muted)}
+.body{display:flex;height:calc(100vh - var(--header) - 32px);overflow:hidden}
+.sidebar{width:var(--sidebar);flex-shrink:0;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.upload-zone{margin:10px;border:1px dashed var(--border);border-radius:6px;padding:14px 10px;text-align:center;cursor:pointer;transition:.2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(224,64,251,.04)}
+.upload-zone svg{width:22px;height:22px;color:var(--muted);margin-bottom:4px}
+.upload-zone p{color:var(--muted);font-size:11px;line-height:1.5}
+.upload-zone strong{color:var(--accent)}
+#file-input{display:none}
+.sec{border-top:1px solid var(--border);padding:8px 12px 6px}
+.sec-hdr{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.sec-hdr::before{content:'';width:2px;height:10px;background:var(--accent);border-radius:1px;display:block;flex-shrink:0}
+.srow{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.slbl{color:var(--muted2);font-size:10px;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;min-width:80px}
+.strk{flex:1}
+input[type="range"]{-webkit-appearance:none;width:100%;height:2px;background:var(--border);border-radius:1px;outline:none;cursor:pointer}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,#e040fb,#7b2ff7);cursor:pointer;box-shadow:0 0 6px var(--accent-glow)}
+.sval{color:var(--text);font-size:10px;min-width:46px;text-align:right;background:var(--card);padding:2px 5px;border-radius:3px;border:1px solid var(--border)}
+.ptabs{display:flex;gap:4px;margin-bottom:7px}
+.ptab{flex:1;padding:5px 0;border-radius:4px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted2);text-align:center;transition:.15s}
+.ptab.active{background:var(--accent);color:#000;border-color:var(--accent)}
+.crow{display:flex;align-items:center;gap:6px;background:var(--card);border-radius:5px;padding:5px 8px;border:1px solid var(--border);margin-bottom:7px}
+.crow .hash{color:var(--muted);font-size:11px}
+.crow input[type="text"]{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:12px;font-family:monospace;min-width:0}
+.csw{width:20px;height:20px;border-radius:3px;border:1px solid #444;cursor:pointer;flex-shrink:0}
+.cpw{position:relative;flex-shrink:0}
+.cpw input[type="color"]{position:absolute;opacity:0;width:20px;height:20px;cursor:pointer;inset:0}
+.dim-row{display:flex;gap:6px;margin-bottom:7px}
+.dim-box{flex:1;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:6px 8px}
+.dim-box label{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;margin-bottom:1px}
+.dim-box input{background:transparent;border:none;outline:none;color:var(--accent);font-size:15px;font-weight:700;width:100%}
+.dim-box input::-webkit-inner-spin-button{-webkit-appearance:none}
+.shapes{display:flex;gap:4px;margin-bottom:7px}
+.shape-btn{flex:1;aspect-ratio:1;border-radius:4px;border:1px solid var(--border);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.shape-btn:hover{border-color:var(--accent-dim)}
+.shape-btn.active{border-color:var(--accent);background:rgba(224,64,251,.1)}
+.shape-btn svg{width:14px;height:14px;color:var(--muted2)}
+.shape-btn.active svg{color:var(--accent)}
+.panels{flex:1;display:flex;min-width:0;overflow:hidden}
+.panel{flex:1;display:flex;flex-direction:column;min-width:0;position:relative}
+.panel+.panel{border-left:1px solid var(--border)}
+.panel-hdr{height:30px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-lbl{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.plbl-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.panel-lbl.out .plbl-dot{background:var(--gold)}.panel-lbl.out{color:var(--gold)}
+.panel-meta{font-size:10px;color:var(--muted)}
+.vtabs{display:flex;gap:2px}
+.vtab{padding:3px 8px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;text-transform:uppercase;color:var(--muted2);border:1px solid transparent;transition:.15s}
+.vtab:hover{color:var(--text)}
+.vtab.active{color:var(--gold);border-color:rgba(255,215,64,.3);background:rgba(255,215,64,.07)}
+.zoom-btns{display:flex;align-items:center;gap:4px;position:absolute;bottom:12px;right:12px;z-index:20;background:rgba(18,18,18,.82);backdrop-filter:blur(6px);border:1px solid var(--border);border-radius:6px;padding:4px 6px}
+.zoom-btn{width:22px;height:22px;border-radius:4px;border:1px solid transparent;background:transparent;cursor:pointer;font-size:14px;font-weight:700;color:var(--muted2);display:flex;align-items:center;justify-content:center;transition:.15s;line-height:1}
+.zoom-btn:hover{color:var(--accent)}
+.zoom-lbl{font-size:10px;color:var(--muted);min-width:36px;text-align:center}
+.pcanvas{flex:1;display:flex;align-items:center;justify-content:center;background:#0a0a0a;overflow:hidden;position:relative}
+.pcanvas canvas,.pcanvas img{max-width:95%;max-height:95%;object-fit:contain;border-radius:2px;transform-origin:center center;transition:transform .2s;will-change:transform}
+.pcanvas canvas.panning{transition:none}
+.pcanvas.alpha-bg{background-color:#c0c0c0;background-image:linear-gradient(45deg,#999 25%,transparent 25%),linear-gradient(-45deg,#999 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#999 75%),linear-gradient(-45deg,transparent 75%,#999 75%);background-size:16px 16px;background-position:0 0,0 8px,8px -8px,-8px 0}
+.placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);text-align:center}
+.placeholder svg{width:48px;height:48px;opacity:.2}.placeholder p{font-size:11px}
+.spin-ov{display:none;position:absolute;inset:0;background:rgba(0,0,0,.6);align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:10}
+.spin-ov.active{display:flex}
+.spinner{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-ov p{font-size:10px;color:var(--accent);letter-spacing:1px}
+.footer{height:32px;display:flex;align-items:center;gap:6px;padding:0 12px;background:var(--panel);border-top:1px solid var(--border);flex-shrink:0}
+.pbar{flex:1;max-width:120px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;display:none}
+.pbar.active{display:block}
+.pfill{height:100%;background:var(--accent);animation:panim 1.4s ease-in-out infinite}
+@keyframes panim{0%{width:0%;margin-left:0}50%{width:70%;margin-left:15%}100%{width:0%;margin-left:100%}}
+.btnsm{padding:4px 12px;border-radius:4px;border:none;cursor:pointer;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;transition:.2s}
+.btn-proc{background:linear-gradient(135deg,#e040fb,#7b2ff7);color:#fff}
+.btn-proc:hover{opacity:.85}.btn-proc:disabled{opacity:.4;cursor:not-allowed}
+.btn-dl{background:transparent;color:var(--accent);border:1px solid rgba(224,64,251,.4)}
+.btn-dl:hover{background:rgba(224,64,251,.08)}.btn-dl:disabled{opacity:.4;cursor:not-allowed}
+.btn-all{background:transparent;color:var(--muted2);border:1px solid var(--border)}
+.btn-all:hover{background:var(--card)}.btn-all:disabled{opacity:.4;cursor:not-allowed}
+.footer-info{margin-left:auto;font-size:10px;color:var(--muted)}
+.tip-icon{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;background:var(--border);color:var(--muted2);font-size:9px;font-style:normal;font-weight:700;cursor:default;margin-left:4px;position:relative;vertical-align:middle;user-select:none;flex-shrink:0}
+.tip-icon::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a2e;border:1px solid var(--border);color:var(--text);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;white-space:pre;padding:7px 10px;border-radius:5px;box-shadow:0 4px 16px rgba(0,0,0,.6);pointer-events:none;opacity:0;transition:opacity .15s;z-index:100;line-height:1.7;font-family:monospace}
+.tip-icon:hover::after{opacity:1}
+.tip-icon.tip-r::after{left:-66px;transform:none;white-space:pre-wrap;width:225px}
+/* ── Texture / Border grids ── */
+.fx-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:6px}
+.fx-btn{padding:5px 3px;background:var(--border);border:1px solid transparent;border-radius:4px;color:var(--muted2);cursor:pointer;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;transition:.15s;text-align:center;line-height:1.35;user-select:none}
+.fx-btn:hover{background:rgba(224,64,251,.12);color:var(--text);border-color:rgba(224,64,251,.4)}
+.fx-btn.active{background:rgba(224,64,251,.2);color:var(--text);border-color:var(--accent)}
+.fx-btn.fx-none{grid-column:span 3;font-size:9px;letter-spacing:.5px}
+/* ── Brush toolbar ── */
+.brush-bar{display:none;align-items:center;gap:6px;padding:4px 10px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;min-width:0}
+.brush-bar.show{display:flex}
+.brush-tog{display:flex;align-items:center;gap:4px;padding:4px 8px;background:var(--border);border:none;border-radius:4px;color:var(--text);cursor:pointer;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;transition:.15s;white-space:nowrap;flex-shrink:0}
+.brush-tog:hover{background:rgba(224,64,251,.2)}
+.brush-tog.on{background:var(--accent);color:#fff}
+.brush-sz-val{font-size:10px;color:var(--muted2);white-space:nowrap;min-width:20px;text-align:right;flex-shrink:0}
+#brush-sz{flex:1;min-width:40px;accent-color:var(--accent)}
+.brush-act{padding:4px 8px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted2);cursor:pointer;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;transition:.15s;white-space:nowrap;flex-shrink:0}
+.brush-act:hover:not(:disabled){color:var(--text);border-color:var(--text)}
+.brush-act:disabled{opacity:.3;cursor:default}
+/* overlay canvas for painting */
+#paint-ov{position:absolute;top:0;left:0;pointer-events:none;display:none}
+#paint-ov.active{pointer-events:auto;cursor:none}
+.pcanvas{position:relative}
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.preset-btn{padding:5px 7px;background:var(--border);border:1px solid transparent;border-radius:4px;color:var(--muted2);cursor:pointer;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;transition:.15s;text-align:left;line-height:1.4;user-select:none}
+.preset-btn:hover{background:rgba(224,64,251,.12);color:var(--text);border-color:rgba(224,64,251,.4)}
+.preset-btn.active{background:rgba(224,64,251,.2);color:var(--text);border-color:var(--accent)}
+.ptag{font-size:7px;font-weight:800;letter-spacing:.8px;display:block;margin-bottom:1px}
+.ptag.dtg{color:#4dd}
+.ptag.dtf{color:var(--accent)}
+.ptag.screen{color:#f90}
+.ptag.style{color:#8d8}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo"><span>Half</span><em>tonix</em> Pro</div>
+  <div class="hdr-info" id="hdr-info">NO IMAGE — apri nel browser, doppio click sul file</div>
+</header>
+<div class="body">
+<aside class="sidebar">
+  <div class="upload-zone" id="upload-zone">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M16 8l-4-4-4 4M12 4v12"/></svg>
+    <p>Trascina immagine o <strong>clicca per caricare</strong></p>
+  </div>
+  <input type="file" id="file-input" accept="image/*"/>
+  <div class="sec" id="preset-sec" style="display:none">
+    <div class="sec-hdr">PRINT PRESET</div>
+    <div class="preset-grid" id="preset-grid"></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">OUTPUT DIMENSION</div>
+    <div class="dim-row">
+      <div class="dim-box"><label>Width (cm)</label><input type="number" id="width-cm" value="30" min="1" max="200"/></div>
+      <div class="dim-box"><label>Length (cm)</label><input type="number" id="length-cm" value="—" readonly style="opacity:.6;cursor:default"/></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">FABRIC PRESET</div>
+    <div class="ptabs">
+      <div class="ptab active" data-preset="dark" data-color="000000">DARK</div>
+      <div class="ptab" data-preset="light" data-color="ffffff">LIGHT</div>
+      <div class="ptab" data-preset="color" data-color="cc3333">COLOR</div>
+    </div>
+    <div class="crow"><span class="hash">#</span><input type="text" id="fab-hex" value="000000" maxlength="6"/><div class="cpw"><div class="csw" id="fab-sw" style="background:#000"></div><input type="color" id="fab-cp" value="#000000"/></div></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">COLOR ISOLATION</div>
+    <div class="crow"><div class="cpw"><div class="csw" id="iso-sw" style="background:#fff"></div><input type="color" id="iso-cp" value="#ffffff"/></div><span class="hash">#</span><input type="text" id="iso-hex" value="ffffff" maxlength="6"/></div>
+    <div class="srow"><span class="slbl">ISO RANGE</span><div class="strk"><input type="range" id="iso-range" min="0" max="100" value="0"/></div><span class="sval" id="iso-rv">0%</span></div>
+    <div class="srow"><span class="slbl">METHOD<i class="tip-icon tip-r" data-tip="SMART di default per immagini,&#10;rimuove solo i pixel connessi al&#10;bordo dell'immagine. Preserva&#10;bianchi interni al design (visi,&#10;riflessi, dettagli architettura).&#10;&#10;Con DEEP a 50%, vengono rimossi&#10;tutti i pixel del colore target&#10;ovunque nell'immagine, inclusi&#10;interno lettere e pattern chiusi.&#10;Ideale per grafiche su sfondo netto.">i</i></span><div class="ptabs" id="iso-mode-tabs"><div class="ptab active" data-mode="smart">SMART</div><div class="ptab" data-mode="deep">DEEP</div></div></div>
+    <div id="iso2-block" style="display:none">
+    <div style="border-top:1px solid var(--border);margin:6px 0 4px;opacity:.5"></div>
+    <div class="srow" style="margin-bottom:2px"><span class="slbl" style="font-size:8px;letter-spacing:1px;color:var(--muted2)">COLOR 2</span></div>
+    <div class="crow"><div class="cpw"><div class="csw" id="iso2-sw" style="background:#000"></div><input type="color" id="iso2-cp" value="#000000"/></div><span class="hash">#</span><input type="text" id="iso2-hex" value="000000" maxlength="6"/></div>
+    <div class="srow"><span class="slbl">ISO RANGE</span><div class="strk"><input type="range" id="iso2-range" min="0" max="100" value="0"/></div><span class="sval" id="iso2-rv">0%</span></div>
+    <div class="srow"><span class="slbl">METHOD</span><div class="ptabs" id="iso2-mode-tabs"><div class="ptab active" data-mode="smart">SMART</div><div class="ptab" data-mode="deep">DEEP</div></div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">LEVELS</div>
+    <div class="srow"><span class="slbl">BLACK</span><div class="strk"><input type="range" id="black-lv" min="0" max="100" value="0"/></div><span class="sval" id="blk-v">0%</span></div>
+    <div class="srow"><span class="slbl">MIDTONE</span><div class="strk"><input type="range" id="mid-lv" min="1" max="200" value="50"/></div><span class="sval" id="mid-v">50%</span></div>
+    <div class="srow"><span class="slbl">WHITE</span><div class="strk"><input type="range" id="wht-lv" min="0" max="100" value="0"/></div><span class="sval" id="wht-v">0%</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">B&amp;W CONVERSION</div>
+    <div class="srow"><span class="slbl" style="color:#e06060">REDS</span><div class="strk"><input type="range" id="reds" min="0" max="100" value="40"/></div><span class="sval" id="rv-reds">40%</span></div>
+    <div class="srow"><span class="slbl" style="color:#c8c040">YELLOWS</span><div class="strk"><input type="range" id="yellows" min="0" max="100" value="60"/></div><span class="sval" id="rv-yellows">60%</span></div>
+    <div class="srow"><span class="slbl" style="color:#50c050">GREENS</span><div class="strk"><input type="range" id="greens" min="0" max="100" value="40"/></div><span class="sval" id="rv-greens">40%</span></div>
+    <div class="srow"><span class="slbl" style="color:#40c0c0">CYANS</span><div class="strk"><input type="range" id="cyans" min="0" max="100" value="60"/></div><span class="sval" id="rv-cyans">60%</span></div>
+    <div class="srow"><span class="slbl" style="color:#5080d0">BLUES</span><div class="strk"><input type="range" id="blues" min="0" max="100" value="20"/></div><span class="sval" id="rv-blues">20%</span></div>
+    <div class="srow"><span class="slbl" style="color:#c060c0">MAGENTAS</span><div class="strk"><input type="range" id="magentas" min="0" max="100" value="80"/></div><span class="sval" id="rv-magentas">80%</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">HALFTONE GRID</div>
+    <div class="shapes">
+      <div class="shape-btn active" data-shape="circle"><svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6" fill="currentColor"/></svg></div>
+      <div class="shape-btn" data-shape="line"><svg viewBox="0 0 20 20"><rect x="2" y="8" width="16" height="4" fill="currentColor"/></svg></div>
+      <div class="shape-btn" data-shape="diamond"><svg viewBox="0 0 20 20"><polygon points="10,3 17,10 10,17 3,10" fill="currentColor"/></svg></div>
+      <div class="shape-btn" data-shape="square"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" fill="currentColor"/></svg></div>
+    </div>
+    <div class="srow"><span class="slbl">RASTER FREQ<i class="tip-icon" data-tip="20 LPI → 1.27 mm → 3.6 pt&#10;25 LPI → 1.02 mm → 2.88 pt&#10;35 LPI → 0.73 mm → 2.06 pt&#10;45 LPI → 0.56 mm → 1.60 pt&#10;55 LPI → 0.46 mm → 1.31 pt&#10;65 LPI → 0.39 mm → 1.11 pt&#10;&#10;MAX (80) → continuous tone">i</i></span><div class="strk"><input type="range" id="lpi" min="5" max="80" value="25"/></div><span class="sval" id="rv-lpi">25 LPI</span></div>
+    <div class="srow"><span class="slbl">DOT ANGLE</span><div class="strk"><input type="range" id="angle" min="0" max="90" step="0.5" value="22.5"/></div><span class="sval" id="rv-angle">22.5°</span></div>
+    <div class="srow"><span class="slbl">INK SPREAD</span><div class="strk"><input type="range" id="ink-spread" min="0" max="100" value="50"/></div><span class="sval" id="rv-spread">50%</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">RASTER TOOLS</div>
+    <div class="srow"><span class="slbl">WAVE STR</span><div class="strk"><input type="range" id="wave-strength" min="0" max="100" value="0"/></div><span class="sval" id="rv-wave-str">0%</span></div>
+    <div class="srow"><span class="slbl">WAVE FREQ</span><div class="strk"><input type="range" id="wave-freq" min="0" max="100" value="0"/></div><span class="sval" id="rv-wave-freq">0%</span></div>
+    <div class="srow"><span class="slbl">CLEAN PX</span><div class="strk"><input type="range" id="clean-px" min="0" max="20" value="0"/></div><span class="sval" id="rv-clean">0px</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">SATURATION</div>
+    <div class="srow"><span class="slbl">FINAL SAT</span><div class="strk"><input type="range" id="saturation" min="0" max="200" value="100"/></div><span class="sval" id="rv-sat">100%</span></div>
+  </div>
+  <div class="sec" style="display:none">
+    <div class="sec-hdr">TEXTURE</div>
+    <div class="fx-grid" id="tex-grid">
+      <button class="fx-btn fx-none active" data-tex="none">— NONE —</button>
+      <button class="fx-btn" data-tex="grain">GRAIN</button>
+      <button class="fx-btn" data-tex="splatter">SPLATTER</button>
+      <button class="fx-btn" data-tex="weave">WEAVE</button>
+      <button class="fx-btn" data-tex="crackle">CRACKLE</button>
+      <button class="fx-btn" data-tex="screen">SCREEN</button>
+      <button class="fx-btn" data-tex="lines">LINES</button>
+    </div>
+    <div class="srow" style="margin-top:6px"><span class="slbl">INTENSITY</span><div class="strk"><input type="range" id="tex-intensity" min="0" max="100" value="30"/></div><span class="sval" id="rv-tex-int">30%</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-hdr">BORDER MASK</div>
+    <div class="fx-grid" id="bdr-grid">
+      <button class="fx-btn fx-none active" data-bdr="none">— NONE —</button>
+      <button class="fx-btn" data-bdr="stamp">STAMP</button>
+      <button class="fx-btn" data-bdr="spray">SPRAY</button>
+      <button class="fx-btn" data-bdr="eroded">ERODED</button>
+      <button class="fx-btn" data-bdr="circle">CIRCLE</button>
+      <button class="fx-btn" data-bdr="banner">BANNER</button>
+      <button class="fx-btn" data-bdr="vignette">VIGNETTE</button>
+      <button class="fx-btn" data-bdr="drybrush">DRYBRUSH</button>
+      <button class="fx-btn" data-bdr="wave">WAVE</button>
+      <button class="fx-btn" data-bdr="grunge">GRUNGE</button>
+      <button class="fx-btn" data-bdr="corners">CORNERS</button>
+      <button class="fx-btn" data-bdr="drip">DRIP</button>
+      <button class="fx-btn" data-bdr="fiber">FIBER</button>
+    </div>
+    <div class="srow" style="margin-top:6px"><span class="slbl">INTENSITY</span><div class="strk"><input type="range" id="bdr-intensity" min="0" max="100" value="50"/></div><span class="sval" id="rv-bdr-int">50%</span></div>
+    <div class="srow"><span class="slbl">ROUGHNESS</span><div class="strk"><input type="range" id="bdr-rough" min="0" max="100" value="50"/></div><span class="sval" id="rv-bdr-rough">50%</span></div>
+  </div>
+  <div style="height:10px"></div>
+</aside>
+<div class="panels">
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-lbl"><span class="plbl-dot"></span>SOURCE</div>
+      <span class="panel-meta" id="src-meta">—</span>
+    </div>
+    <div class="pcanvas">
+      <div class="placeholder" id="src-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><p>Carica un'immagine</p></div>
+      <img id="src-img" style="display:none" alt="source"/>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-hdr">
+      <div class="panel-lbl out"><span class="plbl-dot"></span>OUTPUT</div>
+      <div class="vtabs">
+        <div class="vtab active" data-view="original">ORIGINAL</div>
+        <div class="vtab" data-view="mask">MASK</div>
+        <div class="vtab" data-view="halftone">HALFTONE</div>
+        <div class="vtab" data-view="alpha">ALPHA</div>
+        <div class="vtab" data-view="shirt">SHIRT</div>
+      </div>
+      <div class="brush-bar" id="brush-bar">
+        <button class="brush-tog" id="brush-tog">✏ BRUSH</button>
+        <button class="brush-act" id="brush-undo" disabled>↩ UNDO</button>
+        <input type="range" id="brush-sz" min="3" max="120" value="20">
+        <span class="brush-sz-val" id="brush-sz-val">20</span>
+        <button class="brush-act" id="brush-clr">✕ CLEAR</button>
+      </div>
+    </div>
+    <div class="pcanvas" id="canvas-wrap">
+      <div class="placeholder" id="out-ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="9"/><path d="M8 12h8M12 8v8"/></svg><p>Processa per vedere l'output</p></div>
+      <canvas id="out-canvas" style="display:none"></canvas>
+      <canvas id="paint-ov"></canvas>
+      <div class="spin-ov" id="spinner"><div class="spinner"></div><p>PROCESSING…</p></div>
+      <div class="zoom-btns">
+        <button class="zoom-btn" id="zoom-out">−</button>
+        <span class="zoom-lbl" id="zoom-lbl">100%</span>
+        <button class="zoom-btn" id="zoom-in">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<footer class="footer">
+  <button class="btnsm btn-proc" id="proc-btn" disabled>▶ PROCESS</button>
+  <div class="pbar" id="pbar"><div class="pfill"></div></div>
+  <button class="btnsm btn-dl" id="dl-btn" disabled>↓ DOWNLOAD</button>
+  <button class="btnsm btn-all" id="dl-all" disabled>↓ DOWNLOAD ALL</button>
+  <span class="footer-info" id="footer-info"></span>
+</footer>
+<script>
+// ── ENGINE ────────────────────────────────────────────
+
+function hueWt(h,c,w=60){
+  const d=Math.abs((((h-c+180)%360)+360)%360-180);
+  return Math.max(0,1-d/(w/2));
+}
+
+function bwConv(px,n,p){
+  const g=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const r=px[i*4]/255,gv=px[i*4+1]/255,b=px[i*4+2]/255;
+    const mx=Math.max(r,gv,b),mn=Math.min(r,gv,b),dt=mx-mn+1e-6;
+    let h=0;
+    if(mx===r)h=((gv-b)/dt*60+360)%360;
+    else if(mx===gv)h=(b-r)/dt*60+120;
+    else h=(r-gv)/dt*60+240;
+    const hr=hueWt(h,0),hy=hueWt(h,60),hg=hueWt(h,120),hc=hueWt(h,180),hb=hueWt(h,240),hm=hueWt(h,300);
+    const tot=hr+hy+hg+hc+hb+hm+1e-6;
+    const sm=(hr*(p.reds/50)+hy*(p.yellows/50)+hg*(p.greens/50)+hc*(p.cyans/50)+hb*(p.blues/50)+hm*(p.magentas/50))/tot;
+    const sat=(mx-mn)/(mx+1e-6);
+    const lum=0.299*r+0.587*gv+0.114*b;
+    g[i]=Math.min(lum*(1+sat*(sm-1)),1);
+  }
+  return g;
+}
+
+function applyLevels(g,p){
+  const bp=p.blackLevel/100,wp=1-p.whiteLevel/100,gm=p.midtoneLevel/50,sp=wp-bp+1e-6;
+  const o=new Float32Array(g.length);
+  for(let i=0;i<g.length;i++)
+    o[i]=Math.pow(Math.max(0,Math.min(1,(g[i]-bp)/sp)),1/Math.max(gm,0.01));
+  return o;
+}
+
+function genHalftone(g,w,h,p){
+  const cell=Math.max(4,w/(p.lpi*(p.outputWidthCm/2.54)));
+  const gm=50/Math.max(p.inkSpread,1);
+  const ar=p.angle*Math.PI/180,ca=Math.cos(ar),sa=Math.sin(ar);
+  const ht=new Uint8Array(w*h);
+  const shape=p.dotShape;
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const gg=Math.pow(Math.max(g[y*w+x],0),gm);
+      const xr=x*ca+y*sa,yr=-x*sa+y*ca;
+      const fx=((xr%cell+cell)%cell)/cell-0.5;
+      const fy=((yr%cell+cell)%cell)/cell-0.5;
+      let thr;
+      if(shape==='circle')thr=(fx*fx+fy*fy)*4;
+      else if(shape==='square')thr=Math.max(Math.abs(fx),Math.abs(fy))*2;
+      else if(shape==='diamond')thr=(Math.abs(fx)+Math.abs(fy))*2;
+      else if(shape==='line')thr=Math.abs(fy)*2;
+      else thr=(fx*fx+fy*fy)*4;
+      ht[y*w+x]=gg>thr?255:0;
+    }
+  }
+  return ht;
+}
+
+function edgeDistortion(ht,w,h,waveStrength,waveFrequency){
+  if(waveStrength===0||waveFrequency===0)return ht;
+  const result=new Uint8Array(ht.length);
+  const freq=waveFrequency/100*0.1;
+  const strength=waveStrength/100*10;
+  for(let y=0;y<h;y++){
+    const offset=Math.round(strength*Math.sin(2*Math.PI*freq*y));
+    for(let x=0;x<w;x++){
+      const sx=Math.max(0,Math.min(w-1,x+offset));
+      result[y*w+x]=ht[y*w+sx];
+    }
+  }
+  return result;
+}
+
+function cleanupFilter(ht,w,h,cleanPx){
+  if(cleanPx<=0)return ht;
+  const r=Math.floor(Math.max(3,cleanPx|1)/2);
+  const tmp=new Uint8Array(w*h);
+  const result=new Uint8Array(w*h);
+  // Separable min filter (horizontal then vertical) — O(n·r) instead of O(n·r²)
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      let mn=255;
+      for(let dx=-r;dx<=r;dx++){const nx=Math.max(0,Math.min(w-1,x+dx));if(ht[y*w+nx]<mn)mn=ht[y*w+nx];}
+      tmp[y*w+x]=mn;
+    }
+  }
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      let mn=255;
+      for(let dy=-r;dy<=r;dy++){const ny=Math.max(0,Math.min(h-1,y+dy));if(tmp[ny*w+x]<mn)mn=tmp[ny*w+x];}
+      result[y*w+x]=mn;
+    }
+  }
+  return result;
+}
+
+// Returns Float32Array[n]: 0=isolated(transparent), 1=kept(opaque).
+// RGB Euclidean distance from target. dist=0 → always 0 (isolated).
+// Dark pixels are naturally far from any bright color → always 1 (kept).
+function computeIsoMask(px,n,isoColor,isolationRange,w,h,isoDeep){
+  const mask=new Float32Array(n);
+  mask.fill(1);
+  if(isolationRange===0)return mask;
+  const tr=parseInt(isoColor.slice(0,2),16)/255;
+  const tg=parseInt(isoColor.slice(2,4),16)/255;
+  const tb=parseInt(isoColor.slice(4,6),16)/255;
+  const thr=Math.max(1e-6,(isolationRange/100)*0.45*Math.sqrt(3));
+  const targetLum=0.299*tr+0.587*tg+0.114*tb;
+  // Per-pixel RGB distance from target colour.
+  // Dark pixels (lum < half of target) are never background candidates.
+  const pixDist=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    const r=px[i*4]/255,g=px[i*4+1]/255,b=px[i*4+2]/255;
+    const lum=0.299*r+0.587*g+0.114*b;
+    if(lum<targetLum*0.5){pixDist[i]=thr+1;continue;}
+    const dr=r-tr,dg=g-tg,db=b-tb;
+    pixDist[i]=Math.sqrt(dr*dr+dg*dg+db*db);
+  }
+  // SMART: flood-fill from borders — interior whites protected by coloured outlines.
+  // DEEP:  global removal — ALL pixels near target removed (incl. letter interiors).
+  const isBg=new Uint8Array(n);
+  if(isoDeep){
+    for(let i=0;i<n;i++){if(pixDist[i]<thr)isBg[i]=1;}
+  }else{
+    const queue=[];
+    const tryAdd=i=>{if(pixDist[i]<thr&&!isBg[i]){isBg[i]=1;queue.push(i);}};
+    for(let x=0;x<w;x++){tryAdd(x);tryAdd((h-1)*w+x);}
+    for(let y=1;y<h-1;y++){tryAdd(y*w);tryAdd(y*w+w-1);}
+    let qi=0;
+    while(qi<queue.length){
+      const idx=queue[qi++],x=idx%w,y=(idx/w)|0;let nb;
+      if(x>0   &&pixDist[nb=idx-1]<thr&&!isBg[nb]){isBg[nb]=1;queue.push(nb);}
+      if(x<w-1 &&pixDist[nb=idx+1]<thr&&!isBg[nb]){isBg[nb]=1;queue.push(nb);}
+      if(y>0   &&pixDist[nb=idx-w]<thr&&!isBg[nb]){isBg[nb]=1;queue.push(nb);}
+      if(y<h-1 &&pixDist[nb=idx+w]<thr&&!isBg[nb]){isBg[nb]=1;queue.push(nb);}
+    }
+  }
+  // 3. Expand background by N pixels to kill anti-alias white fringe on design edges.
+  //    range 40%→1px, 80%→2px, 100%→3px (max).
+  const fringe=new Uint8Array(n);
+  const expand=Math.min(3,Math.round(isolationRange/40));
+  for(let pass=0;pass<expand;pass++){
+    const snap=isBg.slice();
+    for(let y=0;y<h;y++){
+      for(let x=0;x<w;x++){
+        const i=y*w+x;if(!snap[i])continue;
+        if(x>0   &&!isBg[i-1]){isBg[i-1]=1;fringe[i-1]=1;}
+        if(x<w-1 &&!isBg[i+1]){isBg[i+1]=1;fringe[i+1]=1;}
+        if(y>0   &&!isBg[i-w]){isBg[i-w]=1;fringe[i-w]=1;}
+        if(y<h-1 &&!isBg[i+w]){isBg[i+w]=1;fringe[i+w]=1;}
+      }
+    }
+  }
+  // 4. Final mask: fringe pixels → hard 0; background → soft falloff; interior → 1.
+  for(let i=0;i<n;i++){
+    if(fringe[i])mask[i]=0;
+    else if(isBg[i])mask[i]=Math.min(1,pixDist[i]/thr*3);
+  }
+  // 5. Fill interior holes: transparent pixels NOT reachable from the image border
+  //    are inside the design (e.g. armor highlights) and must be restored to opaque.
+  //    This prevents DEEP mode from punching holes through enclosed bright areas.
+  {
+    const reach=new Uint8Array(n);
+    const q=[];
+    const tryB=i=>{if(mask[i]<1&&!reach[i]){reach[i]=1;q.push(i);}};
+    for(let x=0;x<w;x++){tryB(x);tryB((h-1)*w+x);}
+    for(let y=1;y<h-1;y++){tryB(y*w);tryB(y*w+w-1);}
+    let qi=0;
+    while(qi<q.length){
+      const idx=q[qi++],x=idx%w,y=(idx/w)|0;let nb;
+      if(x>0   &&mask[nb=idx-1]<1&&!reach[nb]){reach[nb]=1;q.push(nb);}
+      if(x<w-1 &&mask[nb=idx+1]<1&&!reach[nb]){reach[nb]=1;q.push(nb);}
+      if(y>0   &&mask[nb=idx-w]<1&&!reach[nb]){reach[nb]=1;q.push(nb);}
+      if(y<h-1 &&mask[nb=idx+w]<1&&!reach[nb]){reach[nb]=1;q.push(nb);}
+    }
+    for(let i=0;i<n;i++){if(mask[i]<1&&!reach[i])mask[i]=1;}
+  }
+  return mask;
+}
+
+function satAdjust(d,sat){
+  const s=sat/100;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2];
+    const lum=0.299*r+0.587*g+0.114*b;
+    d[i]  =Math.max(0,Math.min(255,lum+(r-lum)*s));
+    d[i+1]=Math.max(0,Math.min(255,lum+(g-lum)*s));
+    d[i+2]=Math.max(0,Math.min(255,lum+(b-lum)*s));
+  }
+}
+
+// ── Seeded PRNG (Mulberry32) ─────────────────────────────
+function mkRng(seed){let s=seed>>>0;return()=>{s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};}
+
+// ── Smooth bilinear value noise ───────────────────────────
+function valNoise(w,h,scl,rng){
+  scl=Math.max(2,scl);
+  const gw=Math.ceil(w/scl)+2,gh=Math.ceil(h/scl)+2,g=new Float32Array(gw*gh);
+  for(let i=0;i<g.length;i++)g[i]=rng();
+  const out=new Float32Array(w*h);
+  for(let y=0;y<h;y++){for(let x=0;x<w;x++){
+    const gx=x/scl,gy=y/scl,ix=Math.min(gx|0,gw-2),iy=Math.min(gy|0,gh-2),fx=gx-ix,fy=gy-iy;
+    const sx=fx*fx*(3-2*fx),sy=fy*fy*(3-2*fy);
+    out[y*w+x]=g[iy*gw+ix]*(1-sx)*(1-sy)+g[iy*gw+ix+1]*sx*(1-sy)+g[(iy+1)*gw+ix]*(1-sx)*sy+g[(iy+1)*gw+ix+1]*sx*sy;
+  }}
+  return out;
+}
+
+// ── Texture mask: 0=texture active (removes ink), 1=clean ─
+function genTextureMask(type,w,h){
+  const n=w*h,out=new Float32Array(n).fill(1),sc=Math.max(w,h);
+  switch(type){
+    case 'grain':{
+      const n1=valNoise(w,h,sc/30,mkRng(11)),n2=valNoise(w,h,sc/80,mkRng(22)),n3=valNoise(w,h,sc/200,mkRng(33));
+      for(let i=0;i<n;i++)out[i]=n1[i]*0.45+n2[i]*0.35+n3[i]*0.2;
+      break;}
+    case 'splatter':{
+      const rng=mkRng(99),nb=Math.max(20,Math.round(n/1800));
+      for(let b=0;b<nb;b++){
+        const bx=rng()*w,by=rng()*h,br=(0.005+rng()*0.025)*sc;
+        const x0=Math.max(0,bx-br*2.5|0),x1=Math.min(w-1,bx+br*2.5|0),y0=Math.max(0,by-br*2.5|0),y1=Math.min(h-1,by+br*2.5|0);
+        for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const d=Math.hypot(x-bx,y-by)/br;if(d<1)out[y*w+x]=Math.min(out[y*w+x],d*d);}
+      }
+      break;}
+    case 'weave':{
+      const p=sc/55;
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        const v1=Math.pow(Math.abs(Math.sin(x*Math.PI/p)),6),v2=Math.pow(Math.abs(Math.sin(y*Math.PI/p)),6);
+        out[y*w+x]=1-Math.max(v1,v2);
+      }
+      break;}
+    case 'crackle':{
+      const n1=valNoise(w,h,sc/7,mkRng(71)),n2=valNoise(w,h,sc/5,mkRng(72));
+      for(let i=0;i<n;i++){const d=Math.abs(n1[i]-n2[i]);out[i]=d<0.06?d/0.06:1;}
+      break;}
+    case 'screen':{
+      const cell=sc/28,ang=Math.PI/6,ca=Math.cos(ang),sa=Math.sin(ang);
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        const xr=x*ca+y*sa,yr=-x*sa+y*ca;
+        const fx=((xr%cell+cell)%cell)/cell-0.5,fy=((yr%cell+cell)%cell)/cell-0.5;
+        out[y*w+x]=Math.min(1,(fx*fx+fy*fy)*5.5);
+      }
+      break;}
+    case 'lines':{
+      const p2=sc/55,ang2=Math.PI/3,ca2=Math.cos(ang2),sa2=Math.sin(ang2);
+      for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+        const r=x*ca2+y*sa2,t=((r%p2+p2)%p2)/p2;
+        out[y*w+x]=t<0.35?t/0.35:1;
+      }
+      break;}
+  }
+  return out;
+}
+
+function applyTextureMask(ht,n,texMask,intensity){
+  const thr=(intensity/100)*0.88,result=new Uint8Array(n);
+  for(let i=0;i<n;i++)result[i]=ht[i]===0&&texMask[i]<thr?255:ht[i];
+  return result;
+}
+
+// ── Border mask: 1=inside (show design), 0=outside (cut) ──
+function genBorderMask(type,w,h,intensity,roughness){
+  const n=w*h,out=new Float32Array(n);
+  if(type==='none'||intensity===0){out.fill(1);return out;}
+  const inF=intensity/100,roughF=Math.max(0.01,roughness/100);
+  const minD=Math.min(w,h);
+  function ss(a,b,x){const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);}
+  // 1D brush profile: random values box-smoothed then normalized to exactly [-amp,+amp]
+  function mkProf(len,scl,amp,seed){
+    const rng=mkRng(seed),r=new Float32Array(len);
+    for(let i=0;i<len;i++) r[i]=rng()-0.5;
+    const bw=Math.max(1,Math.round(scl*0.5)),s=new Float32Array(len);
+    for(let i=0;i<len;i++){let v=0,c=0;for(let j=Math.max(0,i-bw);j<=Math.min(len-1,i+bw);j++){v+=r[j];c++;}s[i]=v/c;}
+    let lo=Infinity,hi=-Infinity;
+    for(let i=0;i<len;i++){if(s[i]<lo)lo=s[i];if(s[i]>hi)hi=s[i];}
+    const d=(hi-lo)||1;for(let i=0;i<len;i++)s[i]=(s[i]-lo)/d*2*amp-amp;
+    return s;
+  }
+
+  // STAMP — rubber-stamp look: high-frequency grainy edge, very sharp cutoff
+  if(type==='stamp'){
+    const depth=minD*0.26*inF,soft=Math.max(1,minD*0.005);
+    const na=valNoise(w,h,Math.max(2,minD*roughF*0.03),mkRng(431));
+    const nb=valNoise(w,h,Math.max(5,minD*roughF*0.09),mkRng(432));
+    const nc=valNoise(w,h,Math.max(12,minD*roughF*0.20),mkRng(433));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nv=(nc[i]-0.5)*0.42+(nb[i]-0.5)*0.36+(na[i]-0.5)*0.22;
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,Math.min(x,w-1-x,y,h-1-y)-depth+nv*depth*roughF*2.5)));
+    }
+    return out;
+  }
+
+  // SPRAY — actual spray-paint droplets: fine dot noise thresholded by edge probability
+  if(type==='spray'){
+    const sprayDepth=minD*0.38*inF;
+    // dot size: roughF=0 → fine mist (2px), roughF=1 → chunky blobs (~25px)
+    const dotScl=Math.max(2,minD*(0.005+roughF*0.022));
+    // clump layer: groups dots into denser/sparser zones
+    const clumpScl=Math.max(8,minD*(0.06+roughF*0.12));
+    const dotF=valNoise(w,h,dotScl,mkRng(441));
+    const clumpF=valNoise(w,h,clumpScl,mkRng(442));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const ed=Math.min(x,w-1-x,y,h-1-y);
+      if(ed>=sprayDepth){out[i]=1;continue;}
+      // combined field: fine dots modulated by coarse clumping
+      const field=dotF[i]*0.60+clumpF[i]*0.40;
+      // probability of a dot surviving increases from 0 (edge) to 1 (inner)
+      const prob=Math.pow(ed/sprayDepth,1.3);
+      // dot is inside (=1) if field < prob; soft threshold
+      out[i]=Math.max(0,Math.min(1,ss(-0.06,0.06,prob-field)));
+    }
+    return out;
+  }
+
+  // ERODED — ultra-aggressive deep erosion: large blobs eat far into the design
+  if(type==='eroded'){
+    const depth=minD*0.38*inF,soft=Math.max(4,minD*0.030);
+    const n1=valNoise(w,h,Math.max(12,minD*roughF*0.40),mkRng(451));
+    const n2=valNoise(w,h,Math.max(6,minD*roughF*0.14),mkRng(452));
+    const n3=valNoise(w,h,Math.max(3,minD*roughF*0.05),mkRng(453));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nv=(n1[i]-0.5)*0.50+(n2[i]-0.5)*0.35+(n3[i]-0.5)*0.15;
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,Math.min(x,w-1-x,y,h-1-y)-depth+nv*depth*roughF*3.0)));
+    }
+    return out;
+  }
+
+  // CIRCLE — circular crop (not ellipse), noise-distorted edge
+  if(type==='circle'){
+    const cx=w/2,cy=h/2,maxR=Math.min(w,h)*0.5*(1-inF*0.40),soft=Math.max(2,minD*0.018);
+    const n1=valNoise(w,h,Math.max(8,minD*roughF*0.30),mkRng(411));
+    const n2=valNoise(w,h,Math.max(4,minD*roughF*0.10),mkRng(412));
+    const n3=valNoise(w,h,Math.max(2,minD*roughF*0.04),mkRng(413));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nv=(n1[i]-0.5)*0.55+(n2[i]-0.5)*0.30+(n3[i]-0.5)*0.15;
+      const r=Math.sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,maxR-r+nv*maxR*roughF*1.6)));
+    }
+    return out;
+  }
+
+  // BANNER — wavy top+bottom, clean sides: vintage label / flag shape
+  if(type==='banner'){
+    const depthH=h*0.18*inF,soft=Math.max(2,minD*0.012);
+    const wn1=valNoise(w,h,Math.max(8,w*roughF*0.28),mkRng(421));
+    const wn2=valNoise(w,h,Math.max(4,w*roughF*0.09),mkRng(422));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nv=(wn1[i]-0.5)*0.65+(wn2[i]-0.5)*0.35;
+      const maskY=ss(-soft,soft,Math.min(y,h-1-y)-depthH+nv*depthH*roughF*2.8);
+      const maskX=ss(-soft*0.5,soft,Math.min(x,w-1-x)-depthH*0.15);
+      out[i]=Math.max(0,Math.min(1,Math.min(maskY,maskX)));
+    }
+    return out;
+  }
+
+  // VIGNETTE — smooth elliptical radial fade, no hard edge anywhere
+  if(type==='vignette'){
+    const cx=w/2,cy=h/2,rx=w*0.5,ry=h*0.5,startR=1-inF*0.82;
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const dx=(x-cx)/rx,dy=(y-cy)/ry,r=Math.sqrt(dx*dx+dy*dy);
+      out[y*w+x]=Math.max(0,Math.min(1,1-ss(startR,1.28,r)));
+    }
+    return out;
+  }
+
+  // DRYBRUSH — dry brush strokes: per-column/row 1D profiles → directional fibers, hard edge
+  if(type==='drybrush'){
+    const depth=minD*0.28*inF;
+    // Scale decreases with roughness: low roughness = broad strokes, high = fine bristles
+    const s1=Math.max(20,minD*(0.28-roughF*0.24));
+    const s2=Math.max(6, minD*(0.08-roughF*0.068));
+    const s3=Math.max(2, minD*(0.025-roughF*0.022));
+    const a1=depth*0.50,a2=depth*0.28,a3=depth*0.20; // broad strokes dominate
+    const pT1=mkProf(w,s1,a1,601),pT2=mkProf(w,s2,a2,602),pT3=mkProf(w,s3,a3,603);
+    const pB1=mkProf(w,s1,a1,604),pB2=mkProf(w,s2,a2,605),pB3=mkProf(w,s3,a3,606);
+    const pL1=mkProf(h,s1,a1,607),pL2=mkProf(h,s2,a2,608),pL3=mkProf(h,s3,a3,609);
+    const pR1=mkProf(h,s1,a1,610),pR2=mkProf(h,s2,a2,611),pR3=mkProf(h,s3,a3,612);
+    const fT=new Float32Array(w),fB=new Float32Array(w);
+    const fLa=new Float32Array(h),fRa=new Float32Array(h);
+    for(let x=0;x<w;x++){
+      fT[x]=Math.max(0,Math.min(h*0.44,depth+pT1[x]+pT2[x]+pT3[x]));
+      fB[x]=Math.max(0,Math.min(h*0.44,depth+pB1[x]+pB2[x]+pB3[x]));
+    }
+    for(let y=0;y<h;y++){
+      fLa[y]=Math.max(0,Math.min(w*0.44,depth+pL1[y]+pL2[y]+pL3[y]));
+      fRa[y]=Math.max(0,Math.min(w*0.44,depth+pR1[y]+pR2[y]+pR3[y]));
+    }
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      out[i]=Math.max(0,Math.min(1,ss(-1.5,1.5,
+        Math.min(y-fT[x],(h-1-y)-fB[x],x-fLa[y],(w-1-x)-fRa[y]))));
+    }
+    return out;
+  }
+
+  // WAVE — sinusoidal ripple on all 4 edges independently
+  if(type==='wave'){
+    const depth=minD*0.18*inF,soft=Math.max(2,minD*0.016);
+    const wAmp=depth*roughF*0.72;
+    const fq=Math.PI*2/(minD*(0.24-roughF*0.11+0.02));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const dL=x-depth-wAmp*Math.sin(y*fq);
+      const dR=(w-1-x)-depth-wAmp*Math.sin(y*fq+Math.PI);
+      const dT=y-depth-wAmp*Math.sin(x*fq);
+      const dB=(h-1-y)-depth-wAmp*Math.sin(x*fq+Math.PI);
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,Math.min(dL,dR,dT,dB))));
+    }
+    return out;
+  }
+
+  // GRUNGE — non-linear noise combination: irregular deep patches
+  if(type==='grunge'){
+    const depth=minD*0.30*inF,soft=Math.max(4,minD*0.028);
+    const n1=valNoise(w,h,Math.max(20,minD*roughF*0.52),mkRng(471));
+    const n2=valNoise(w,h,Math.max(10,minD*roughF*0.22),mkRng(472));
+    const n3=valNoise(w,h,Math.max(4,minD*roughF*0.08),mkRng(473));
+    const n4=valNoise(w,h,Math.max(2,minD*roughF*0.03),mkRng(474));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nb=(n1[i]-0.5)*0.40+(n2[i]-0.5)*0.30+(n3[i]-0.5)*0.20+(n4[i]-0.5)*0.10;
+      const nv=nb+Math.sign(nb)*nb*nb*1.6; // amplify extremes → irregular patches
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,Math.min(x,w-1-x,y,h-1-y)-depth+nv*depth*roughF*2.7)));
+    }
+    return out;
+  }
+
+  // CORNERS — diagonal cuts at all 4 corners
+  if(type==='corners'){
+    const cut=Math.min(w,h)*0.24*inF,soft=Math.max(2,minD*0.016);
+    const n1=valNoise(w,h,Math.max(6,minD*roughF*0.20),mkRng(481));
+    const n2=valNoise(w,h,Math.max(3,minD*roughF*0.07),mkRng(482));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nv=(n1[i]-0.5)*0.65+(n2[i]-0.5)*0.35;
+      const dTL=x+y-cut,dTR=(w-1-x)+y-cut;
+      const dBL=x+(h-1-y)-cut,dBR=(w-1-x)+(h-1-y)-cut;
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,Math.min(dTL,dTR,dBL,dBR)+nv*cut*roughF*1.3)));
+    }
+    return out;
+  }
+
+  // DRIP — ink drips extending downward from bottom edge
+  if(type==='drip'){
+    const depth=minD*0.16*inF,dripMax=h*0.14*roughF,soft=Math.max(2,minD*0.015);
+    const nd1=valNoise(w,h,Math.max(6,w*roughF*0.16),mkRng(491));
+    const nd2=valNoise(w,h,Math.max(3,w*roughF*0.06),mkRng(492));
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      const nd=Math.max(0,nd1[i]*0.65+nd2[i]*0.35-0.48)*1.92;
+      const dripExt=nd*nd*dripMax;
+      const dBot=(h-1-y)-depth+dripExt;
+      const dOther=Math.min(y-depth,x-depth,(w-1-x)-depth);
+      out[i]=Math.max(0,Math.min(1,ss(-soft,soft,Math.min(dOther,dBot))));
+    }
+    return out;
+  }
+
+  // FIBER — fine scratches and fibers: high-freq 1D profiles, hard binary edge
+  if(type==='fiber'){
+    const depth=minD*0.28*inF;
+    // All scales much finer than drybrush
+    const s1=Math.max(8, minD*(0.10-roughF*0.08));
+    const s2=Math.max(3, minD*(0.035-roughF*0.028));
+    const s3=Math.max(2, minD*(0.012-roughF*0.010));
+    const a1=depth*0.18,a2=depth*0.28,a3=depth*0.58; // fine marks dominate
+    const pT1=mkProf(w,s1,a1,621),pT2=mkProf(w,s2,a2,622),pT3=mkProf(w,s3,a3,623);
+    const pB1=mkProf(w,s1,a1,624),pB2=mkProf(w,s2,a2,625),pB3=mkProf(w,s3,a3,626);
+    const pL1=mkProf(h,s1,a1,627),pL2=mkProf(h,s2,a2,628),pL3=mkProf(h,s3,a3,629);
+    const pR1=mkProf(h,s1,a1,630),pR2=mkProf(h,s2,a2,631),pR3=mkProf(h,s3,a3,632);
+    const fT=new Float32Array(w),fB=new Float32Array(w);
+    const fLa=new Float32Array(h),fRa=new Float32Array(h);
+    for(let x=0;x<w;x++){
+      fT[x]=Math.max(0,Math.min(h*0.44,depth+pT1[x]+pT2[x]+pT3[x]));
+      fB[x]=Math.max(0,Math.min(h*0.44,depth+pB1[x]+pB2[x]+pB3[x]));
+    }
+    for(let y=0;y<h;y++){
+      fLa[y]=Math.max(0,Math.min(w*0.44,depth+pL1[y]+pL2[y]+pL3[y]));
+      fRa[y]=Math.max(0,Math.min(w*0.44,depth+pR1[y]+pR2[y]+pR3[y]));
+    }
+    for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+      const i=y*w+x;
+      out[i]=Math.max(0,Math.min(1,ss(-1.5,1.5,
+        Math.min(y-fT[x],(h-1-y)-fB[x],x-fLa[y],(w-1-x)-fRa[y]))));
+    }
+    return out;
+  }
+
+  out.fill(1);return out;
+}
+
+function runPipeline(srcImg,p,maxPx,allowUpscale=false){
+  let sw=srcImg.naturalWidth,sh=srcImg.naturalHeight;
+  const sc=maxPx?(allowUpscale?maxPx/Math.max(sw,sh):Math.min(1,maxPx/Math.max(sw,sh))):1;
+  const w=Math.round(sw*sc),h=Math.round(sh*sc),n=w*h;
+
+  const sc2=document.createElement('canvas');sc2.width=w;sc2.height=h;
+  const sctx=sc2.getContext('2d');sctx.drawImage(srcImg,0,0,w,h);
+  const px=sctx.getImageData(0,0,w,h).data;
+
+  // 1. B&W conversion
+  const gray=bwConv(px,n,p);
+  // 2. Levels
+  const gLv=applyLevels(gray,p);
+  // 3. Color isolation mask (computed from original colors, applied before halftoning)
+  const isoMask=computeIsoMask(px,n,p.isoColor,p.isolationRange,w,h,p.isoDeep);
+  if(p.isolationRange2>0){const m2=computeIsoMask(px,n,p.isoColor2,p.isolationRange2,w,h,p.isoDeep2);for(let i=0;i<n;i++)isoMask[i]*=m2[i];}
+  // 4. Apply iso mask to grayscale so halftone dots disappear in isolated areas
+  const gIso=new Float32Array(n);
+  for(let i=0;i<n;i++)gIso[i]=gLv[i]*isoMask[i];
+  // 5. Halftone dots (at LPI=80/max → continuous tone, no screen)
+  let ht;
+  if(p.lpi>=80){
+    ht=new Uint8Array(n);
+    for(let i=0;i<n;i++)ht[i]=Math.round(gIso[i]*255);
+  }else{
+    ht=genHalftone(gIso,w,h,p);
+  }
+  // 6. Edge distortion (wave)
+  ht=edgeDistortion(ht,w,h,p.waveStrength,p.waveFrequency);
+  // 7. Cleanup (erosion)
+  ht=cleanupFilter(ht,w,h,p.cleanPx);
+  // 8. Texture overlay (eat ink dots)
+  if(p.textureType&&p.textureType!=='none'&&p.textureIntensity>0){
+    ht=applyTextureMask(ht,n,genTextureMask(p.textureType,w,h),p.textureIntensity);
+  }
+  // 9. Border mask (rough-edge crop)
+  const bm=p.borderType&&p.borderType!=='none'
+    ?genBorderMask(p.borderType,w,h,p.borderIntensity,p.borderRoughness)
+    :null;
+
+  function mkCanvas(fn){
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    fn(c.getContext('2d'),c);return c;
+  }
+
+  // original
+  const orig=mkCanvas(ctx=>ctx.drawImage(srcImg,0,0,w,h));
+
+  // mask (B&W after iso — shows what will actually be printed)
+  const mask=mkCanvas(ctx=>{
+    const d=ctx.createImageData(w,h);
+    for(let i=0;i<n;i++){
+      const v=Math.round(gIso[i]*(bm?bm[i]:1)*255);
+      d.data[i*4]=v;d.data[i*4+1]=v;d.data[i*4+2]=v;d.data[i*4+3]=255;
+    }
+    ctx.putImageData(d,0,0);
+  });
+
+  // halftone (B&W dots — texture + border applied)
+  const hton=mkCanvas(ctx=>{
+    const d=ctx.createImageData(w,h);
+    for(let i=0;i<n;i++){
+      const bmv=bm?bm[i]:1,v=Math.round(ht[i]*bmv+255*(1-bmv));
+      d.data[i*4]=v;d.data[i*4+1]=v;d.data[i*4+2]=v;d.data[i*4+3]=255;
+    }
+    ctx.putImageData(d,0,0);
+  });
+
+  // alpha = original colors, halftone × iso × border as combined alpha mask
+  const alpha=mkCanvas(ctx=>{
+    const d=new Uint8ClampedArray(px);
+    for(let i=0;i<n;i++)d[i*4+3]=Math.round(px[i*4+3]*(ht[i]/255)*isoMask[i]*(bm?bm[i]:1));
+    ctx.putImageData(new ImageData(d,w,h),0,0);
+  });
+
+  // shirt = fabric bg + saturated original composited with halftone × iso × border alpha
+  const shirt=mkCanvas(ctx=>{
+    ctx.fillStyle='#'+p.fabricColor;ctx.fillRect(0,0,w,h);
+    const d=new Uint8ClampedArray(px);
+    satAdjust(d,p.saturation);
+    for(let i=0;i<n;i++)d[i*4+3]=Math.round(px[i*4+3]*(ht[i]/255)*isoMask[i]*(bm?bm[i]:1));
+    const tc=document.createElement('canvas');tc.width=w;tc.height=h;
+    tc.getContext('2d').putImageData(new ImageData(d,w,h),0,0);
+    ctx.drawImage(tc,0,0);
+  });
+
+  return{original:orig,mask,halftone:hton,alpha,shirt,srcPx:new Uint8ClampedArray(px),gLv};
+}
+
+// ── UI ────────────────────────────────────────────────
+const S={file:null,results:null,view:'original',fabColor:'000000',isoColor:'ffffff',isoColor2:'000000',dotShape:'circle',isoDeep:false,isoDeep2:false,texType:'none',bdrType:'none'};
+let debT=null,zoom=1,panX=0,panY=0,isPanning=false,panStart=null,spaceDown=false,imgAspect=1;
+const $=id=>document.getElementById(id);
+const oc=$('out-canvas'),cw=$('canvas-wrap');
+
+// ── Brush / paint overlay ──────────────────────────────
+let paintOC=document.createElement('canvas'); // persistent paint strokes (white=include)
+let brushOn=false,isPainting=false,lastPX=null;
+let undoStack=[],lastCursorPos=null;
+const MAX_UNDO=20;
+
+const paintOv=$('paint-ov');
+const paintOvCtx=paintOv.getContext('2d');
+
+function syncOverlay(){
+  if(!S.results)return;
+  const ocRect=oc.getBoundingClientRect();
+  const cwRect=cw.getBoundingClientRect();
+  paintOv.width=paintOC.width;paintOv.height=paintOC.height;
+  paintOv.style.left=(ocRect.left-cwRect.left)+'px';
+  paintOv.style.top=(ocRect.top-cwRect.top)+'px';
+  paintOv.style.width=ocRect.width+'px';
+  paintOv.style.height=ocRect.height+'px';
+  paintOv.style.maxWidth='none';paintOv.style.maxHeight='none';
+}
+
+function refreshMaskWithPaint(){
+  if(!S.results||S.view!=='mask')return;
+  const ctx=oc.getContext('2d');
+  ctx.drawImage(S.results.mask,0,0);
+  // Draw paint strokes in cyan for visibility
+  if(paintOC.width===oc.width&&paintOC.height===oc.height){
+    ctx.save();ctx.globalCompositeOperation='source-over';
+    // Tint paint strokes cyan
+    const tmp=document.createElement('canvas');tmp.width=oc.width;tmp.height=oc.height;
+    const tCtx=tmp.getContext('2d');
+    tCtx.drawImage(paintOC,0,0);
+    tCtx.globalCompositeOperation='source-in';
+    tCtx.fillStyle='rgba(0,220,255,0.85)';tCtx.fillRect(0,0,tmp.width,tmp.height);
+    ctx.drawImage(tmp,0,0);ctx.restore();
+  }
+}
+
+function getImgCoords(e){
+  const rect=paintOv.getBoundingClientRect();
+  const sx=paintOC.width/rect.width,sy=paintOC.height/rect.height;
+  const cx=e.touches?e.touches[0].clientX:e.clientX;
+  const cy=e.touches?e.touches[0].clientY:e.clientY;
+  return{x:(cx-rect.left)*sx,y:(cy-rect.top)*sy};
+}
+
+function drawCursor(x,y){
+  lastCursorPos={x,y};
+  const ctx=paintOv.getContext('2d');
+  ctx.clearRect(0,0,paintOv.width,paintOv.height);
+  const r=+$('brush-sz').value;
+  ctx.save();
+  ctx.strokeStyle='rgba(0,0,0,0.6)';ctx.lineWidth=3;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}
+
+function clearCursor(resetPos){
+  paintOv.getContext('2d').clearRect(0,0,paintOv.width,paintOv.height);
+  if(resetPos)lastCursorPos=null;
+}
+
+function saveUndoState(){
+  const snap=document.createElement('canvas');
+  snap.width=paintOC.width;snap.height=paintOC.height;
+  snap.getContext('2d').drawImage(paintOC,0,0);
+  undoStack.push(snap);
+  if(undoStack.length>MAX_UNDO)undoStack.shift();
+  $('brush-undo').disabled=false;
+}
+
+function undoLast(){
+  if(!undoStack.length)return;
+  const snap=undoStack.pop();
+  const ctx=paintOC.getContext('2d');
+  ctx.clearRect(0,0,paintOC.width,paintOC.height);
+  ctx.drawImage(snap,0,0);
+  if(S.view==='mask')refreshMaskWithPaint();else showView(S.view);
+  $('brush-undo').disabled=undoStack.length===0;
+}
+
+function paintDot(x,y){
+  const r=+$('brush-sz').value;
+  const pCtx=paintOC.getContext('2d');
+  pCtx.globalCompositeOperation='source-over';
+  pCtx.fillStyle='rgba(255,255,255,1)';
+  pCtx.beginPath();pCtx.arc(x,y,r,0,Math.PI*2);pCtx.fill();
+  refreshMaskWithPaint();
+}
+
+function paintLine(x1,y1,x2,y2){
+  const r=+$('brush-sz').value;
+  const dx=x2-x1,dy=y2-y1,dist=Math.sqrt(dx*dx+dy*dy);
+  const steps=Math.max(1,Math.floor(dist/(r*0.3)));
+  for(let i=0;i<=steps;i++) paintDot(x1+dx*i/steps,y1+dy*i/steps);
+}
+
+paintOv.addEventListener('mousedown',e=>{if(!brushOn)return;saveUndoState();isPainting=true;const p=getImgCoords(e);lastPX=p;paintDot(p.x,p.y);e.preventDefault();});
+paintOv.addEventListener('mousemove',e=>{
+  if(!brushOn)return;
+  const p=getImgCoords(e);
+  drawCursor(p.x,p.y);
+  if(!isPainting)return;
+  if(lastPX)paintLine(lastPX.x,lastPX.y,p.x,p.y);
+  lastPX=p;e.preventDefault();
+});
+paintOv.addEventListener('mouseup',()=>{isPainting=false;lastPX=null;});
+paintOv.addEventListener('mouseleave',()=>{isPainting=false;lastPX=null;clearCursor(false);});
+paintOv.addEventListener('touchstart',e=>{if(!brushOn)return;saveUndoState();isPainting=true;const p=getImgCoords(e);lastPX=p;paintDot(p.x,p.y);e.preventDefault();},{passive:false});
+paintOv.addEventListener('touchmove',e=>{if(!brushOn||!isPainting)return;const p=getImgCoords(e);if(lastPX)paintLine(lastPX.x,lastPX.y,p.x,p.y);lastPX=p;e.preventDefault();},{passive:false});
+paintOv.addEventListener('touchend',()=>{isPainting=false;lastPX=null;});
+
+$('brush-tog').addEventListener('click',()=>{
+  brushOn=!brushOn;
+  $('brush-tog').classList.toggle('on',brushOn);
+  paintOv.classList.toggle('active',brushOn);
+  if(!brushOn)clearCursor(true);
+});
+$('brush-undo').addEventListener('click',undoLast);
+$('brush-clr').addEventListener('click',()=>{
+  if(paintOC.width)saveUndoState();
+  paintOC.getContext('2d').clearRect(0,0,paintOC.width,paintOC.height);
+  refreshMaskWithPaint();
+});
+$('brush-sz').addEventListener('input',()=>{
+  $('brush-sz-val').textContent=$('brush-sz').value;
+  if(!brushOn)return;
+  if(lastCursorPos) drawCursor(lastCursorPos.x,lastCursorPos.y);
+  else if(paintOC.width){
+    paintOv.style.display='block';
+    drawCursor(paintOC.width/2,paintOC.height/2);
+  }
+});
+
+// Compute fixed ht + isoFixed arrays for painted areas (painted → gIso=1, isoMask=1).
+function buildFixedData(res, paintCanvas, p){
+  const w=res.mask.width,h=res.mask.height,n=w*h;
+  const pd=paintCanvas.getContext('2d').getImageData(0,0,w,h);
+  const isoMask=computeIsoMask(res.srcPx,n,p.isoColor,p.isolationRange,w,h,p.isoDeep);
+  if(p.isolationRange2>0){const m2=computeIsoMask(res.srcPx,n,p.isoColor2,p.isolationRange2,w,h,p.isoDeep2);for(let i=0;i<n;i++)isoMask[i]*=m2[i];}
+  const isoFixed=new Float32Array(isoMask);
+  const gIsoFixed=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    if(pd.data[i*4+3]>0){isoFixed[i]=1.0;gIsoFixed[i]=1.0;}
+    else gIsoFixed[i]=res.gLv[i]*isoMask[i];
+  }
+  let ht;
+  if(p.lpi>=80){ht=new Uint8Array(n);for(let i=0;i<n;i++)ht[i]=Math.round(gIsoFixed[i]*255);}
+  else ht=genHalftone(gIsoFixed,w,h,p);
+  ht=edgeDistortion(ht,w,h,p.waveStrength,p.waveFrequency);
+  ht=cleanupFilter(ht,w,h,p.cleanPx);
+  if(p.textureType&&p.textureType!=='none'&&p.textureIntensity>0){
+    ht=applyTextureMask(ht,n,genTextureMask(p.textureType,w,h),p.textureIntensity);
+  }
+  const bm=p.borderType&&p.borderType!=='none'?genBorderMask(p.borderType,w,h,p.borderIntensity,p.borderRoughness):null;
+  return{ht,isoFixed,bm,w,h,n};
+}
+
+function buildHalftoneWithPaint(res,paintCanvas,p){
+  if(!paintCanvas||!paintCanvas.width||paintCanvas.width!==res.mask.width) return res.halftone;
+  const fd=buildFixedData(res,paintCanvas,p);
+  const out=document.createElement('canvas');out.width=fd.w;out.height=fd.h;
+  const ctx=out.getContext('2d');
+  const d=ctx.createImageData(fd.w,fd.h);
+  for(let i=0;i<fd.n;i++){
+    const bmv=fd.bm?fd.bm[i]:1;
+    const v=Math.round(fd.ht[i]*bmv+255*(1-bmv));
+    d.data[i*4]=v;d.data[i*4+1]=v;d.data[i*4+2]=v;d.data[i*4+3]=255;
+  }
+  ctx.putImageData(d,0,0);
+  return out;
+}
+
+function buildAlphaWithPaint(res,paintCanvas,p){
+  if(!paintCanvas||!paintCanvas.width||paintCanvas.width!==res.mask.width) return res.alpha;
+  const fd=buildFixedData(res,paintCanvas,p);
+  const out=document.createElement('canvas');out.width=fd.w;out.height=fd.h;
+  const ctx=out.getContext('2d');
+  const d=new Uint8ClampedArray(res.srcPx);
+  for(let i=0;i<fd.n;i++) d[i*4+3]=Math.round(res.srcPx[i*4+3]*(fd.ht[i]/255)*fd.isoFixed[i]*(fd.bm?fd.bm[i]:1));
+  ctx.putImageData(new ImageData(d,fd.w,fd.h),0,0);
+  return out;
+}
+
+function buildShirtWithPaint(res,paintCanvas,p){
+  if(!paintCanvas||!paintCanvas.width||paintCanvas.width!==res.mask.width) return res.shirt;
+  const fd=buildFixedData(res,paintCanvas,p);
+  const out=document.createElement('canvas');out.width=fd.w;out.height=fd.h;
+  const ctx=out.getContext('2d');
+  ctx.fillStyle='#'+p.fabricColor;ctx.fillRect(0,0,fd.w,fd.h);
+  const d=new Uint8ClampedArray(res.srcPx);
+  satAdjust(d,p.saturation);
+  for(let i=0;i<fd.n;i++) d[i*4+3]=Math.round(res.srcPx[i*4+3]*(fd.ht[i]/255)*fd.isoFixed[i]*(fd.bm?fd.bm[i]:1));
+  const tc=document.createElement('canvas');tc.width=fd.w;tc.height=fd.h;
+  tc.getContext('2d').putImageData(new ImageData(d,fd.w,fd.h),0,0);
+  ctx.drawImage(tc,0,0);
+  return out;
+}
+
+function getP(){
+  return{
+    reds:+$('reds').value,yellows:+$('yellows').value,greens:+$('greens').value,
+    cyans:+$('cyans').value,blues:+$('blues').value,magentas:+$('magentas').value,
+    blackLevel:+$('black-lv').value,midtoneLevel:+$('mid-lv').value,whiteLevel:+$('wht-lv').value,
+    lpi:+$('lpi').value,outputWidthCm:+$('width-cm').value,angle:+$('angle').value,
+    inkSpread:+$('ink-spread').value,dotShape:S.dotShape,fabricColor:S.fabColor,
+    isoColor:S.isoColor,isolationRange:+$('iso-range').value,isoDeep:S.isoDeep,
+    isoColor2:S.isoColor2,isolationRange2:+$('iso2-range').value,isoDeep2:S.isoDeep2,
+    waveStrength:+$('wave-strength').value,waveFrequency:+$('wave-freq').value,
+    cleanPx:+$('clean-px').value,saturation:+$('saturation').value,
+    textureType:S.texType,textureIntensity:+$('tex-intensity').value,
+    borderType:S.bdrType,borderIntensity:+$('bdr-intensity').value,borderRoughness:+$('bdr-rough').value
+  };
+}
+
+function showView(v){
+  if(!S.results)return;
+  cw.classList.toggle('alpha-bg',v==='alpha');
+  $('brush-bar').classList.toggle('show',v==='mask');
+  paintOv.style.display=v==='mask'?'block':'none';
+  if(v==='mask'){
+    oc.width=S.results.mask.width;oc.height=S.results.mask.height;
+    oc.style.display='block';$('out-ph').style.display='none';
+    zoom=1;panX=0;panY=0;applyZoom();
+    refreshMaskWithPaint();
+    requestAnimationFrame(syncOverlay);
+  }else{
+    const hasPaint=paintOC.width>0;
+    let c;
+    if(hasPaint&&v==='halftone') c=buildHalftoneWithPaint(S.results,paintOC,getP());
+    else if(hasPaint&&v==='alpha')  c=buildAlphaWithPaint(S.results,paintOC,getP());
+    else if(hasPaint&&v==='shirt')  c=buildShirtWithPaint(S.results,paintOC,getP());
+    else c=S.results[v];
+    oc.width=c.width;oc.height=c.height;
+    oc.getContext('2d').drawImage(c,0,0);
+    oc.style.display='block';$('out-ph').style.display='none';
+    zoom=1;panX=0;panY=0;applyZoom();
+  }
+}
+
+function applyZoom(){
+  oc.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;
+  oc.style.maxWidth=zoom<=1?'95%':'none';
+  oc.style.maxHeight=zoom<=1?'95%':'none';
+  $('zoom-lbl').textContent=Math.round(zoom*100)+'%';
+  cw.style.cursor=zoom>1?'grab':'';
+  if(S.view==='mask') setTimeout(syncOverlay,220);
+}
+$('zoom-in').addEventListener('click',()=>{zoom=Math.min(zoom*1.33,8);applyZoom();});
+$('zoom-out').addEventListener('click',()=>{
+  zoom=Math.max(zoom/1.33,0.1);
+  if(zoom<=1){panX=0;panY=0;}
+  applyZoom();
+});
+
+// Pan (drag) when zoomed in
+let rafPan=null;
+cw.addEventListener('mousedown',e=>{
+  if(zoom<=1||e.button!==0)return;
+  if(brushOn&&!spaceDown)return;
+  isPanning=true;
+  panStart={x:e.clientX-panX,y:e.clientY-panY};
+  oc.classList.add('panning');
+  cw.style.cursor='grabbing';
+  e.preventDefault();
+});
+
+// Photoshop-style space+drag pan
+window.addEventListener('keydown',e=>{
+  if(e.code!=='Space'||e.repeat||e.target.matches('input,textarea'))return;
+  spaceDown=true;
+  e.preventDefault();
+  if(zoom<=1)return;
+  if(brushOn)paintOv.style.pointerEvents='none';
+  cw.style.cursor='grab';
+});
+window.addEventListener('keyup',e=>{
+  if(e.code!=='Space')return;
+  spaceDown=false;
+  if(brushOn)paintOv.style.pointerEvents='';
+  if(!isPanning)cw.style.cursor=zoom>1&&!brushOn?'grab':'';
+});
+window.addEventListener('mousemove',e=>{
+  if(!isPanning)return;
+  panX=e.clientX-panStart.x;
+  panY=e.clientY-panStart.y;
+  if(!rafPan){
+    rafPan=requestAnimationFrame(()=>{
+      oc.style.transform=`translate(${panX}px,${panY}px) scale(${zoom})`;
+      rafPan=null;
+    });
+  }
+});
+window.addEventListener('mouseup',e=>{
+  if(!isPanning)return;
+  isPanning=false;
+  oc.classList.remove('panning');
+  cw.style.cursor=zoom>1?'grab':'';
+  if(S.view==='mask')syncOverlay();
+});
+
+// Upload
+$('upload-zone').addEventListener('click',()=>$('file-input').click());
+$('file-input').addEventListener('change',e=>loadFile(e.target.files[0]));
+$('upload-zone').addEventListener('dragover',e=>{e.preventDefault();$('upload-zone').classList.add('drag')});
+$('upload-zone').addEventListener('dragleave',()=>$('upload-zone').classList.remove('drag'));
+$('upload-zone').addEventListener('drop',e=>{
+  e.preventDefault();$('upload-zone').classList.remove('drag');
+  if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);
+});
+
+function loadFile(f){
+  if(!f||!f.type.startsWith('image/'))return;
+  S.file=f;S.results=null;$('dl-btn').disabled=true;$('dl-all').disabled=true;
+  // New image → reset paint (strokes from previous image are invalid)
+  paintOC=document.createElement('canvas'); // dimensions set later in run()
+  undoStack=[];brushOn=false;
+  $('brush-tog').classList.remove('on');$('brush-undo').disabled=true;
+  paintOv.classList.remove('active');clearCursor(true);
+  const url=URL.createObjectURL(f);
+  const si=$('src-img');
+  si.onload=()=>{
+    si.style.display='block';$('src-ph').style.display='none';
+    // Auto-detect physical size at 300 DPI from pixel dimensions
+    const autoCm=Math.round(si.naturalWidth/300*2.54*10)/10;
+    const cm=Math.max(1,Math.min(200,autoCm));
+    imgAspect=si.naturalHeight/si.naturalWidth;
+    $('width-cm').value=cm;
+    $('length-cm').value=(cm*imgAspect).toFixed(1);
+    run();
+  };
+  si.src=url;
+  $('src-meta').textContent=f.name+' · '+Math.round(f.size/1024)+'KB';
+  $('hdr-info').textContent=f.name;
+  $('proc-btn').disabled=false;
+}
+
+// Sliders config: [id, label-id, formatter]
+const SC=[
+  ['iso-range','iso-rv',v=>v+'%'],['iso2-range','iso2-rv',v=>v+'%'],
+  ['black-lv','blk-v',v=>v+'%'],['mid-lv','mid-v',v=>v+'%'],['wht-lv','wht-v',v=>v+'%'],
+  ['reds','rv-reds',v=>v+'%'],['yellows','rv-yellows',v=>v+'%'],['greens','rv-greens',v=>v+'%'],
+  ['cyans','rv-cyans',v=>v+'%'],['blues','rv-blues',v=>v+'%'],['magentas','rv-magentas',v=>v+'%'],
+  ['lpi','rv-lpi',v=>+v>=80?'CONT.':v+' LPI'],['angle','rv-angle',v=>v+'°'],['ink-spread','rv-spread',v=>v+'%'],
+  ['wave-strength','rv-wave-str',v=>v+'%'],['wave-freq','rv-wave-freq',v=>v+'%'],
+  ['clean-px','rv-clean',v=>v+'px'],
+  ['saturation','rv-sat',v=>v+'%'],
+  ['tex-intensity','rv-tex-int',v=>v+'%'],
+  ['bdr-intensity','rv-bdr-int',v=>v+'%'],
+  ['bdr-rough','rv-bdr-rough',v=>v+'%']
+];
+function sched(){clearTimeout(debT);debT=setTimeout(()=>{if(S.file)run();},500);}
+SC.forEach(([id,lb,f])=>{
+  const el=$(id),l=$(lb);
+  el.addEventListener('input',()=>{l.textContent=f(el.value);sched();});
+});
+
+// Fabric color
+document.querySelectorAll('[data-preset]').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('[data-preset]').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');S.fabColor=t.dataset.color;
+  $('fab-hex').value=t.dataset.color;
+  $('fab-sw').style.background='#'+t.dataset.color;
+  $('fab-cp').value='#'+t.dataset.color;
+  sched();
+}));
+$('fab-cp').addEventListener('input',function(){
+  S.fabColor=this.value.replace('#','');
+  $('fab-hex').value=S.fabColor;$('fab-sw').style.background=this.value;sched();
+});
+$('fab-hex').addEventListener('input',function(){
+  if(this.value.length===6){S.fabColor=this.value;$('fab-sw').style.background='#'+this.value;$('fab-cp').value='#'+this.value;sched();}
+});
+
+// Isolation color
+document.querySelectorAll('#iso-mode-tabs .ptab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#iso-mode-tabs .ptab').forEach(t=>t.classList.remove('active'));
+  b.classList.add('active');S.isoDeep=b.dataset.mode==='deep';sched();
+}));
+document.querySelectorAll('#iso2-mode-tabs .ptab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#iso2-mode-tabs .ptab').forEach(t=>t.classList.remove('active'));
+  b.classList.add('active');S.isoDeep2=b.dataset.mode==='deep';sched();
+}));
+$('iso2-cp').addEventListener('input',function(){
+  S.isoColor2=this.value.replace('#','');$('iso2-hex').value=S.isoColor2;$('iso2-sw').style.background=this.value;sched();
+});
+$('iso2-hex').addEventListener('input',function(){
+  if(this.value.length===6){S.isoColor2=this.value;$('iso2-sw').style.background='#'+this.value;$('iso2-cp').value='#'+this.value;sched();}
+});
+$('iso-cp').addEventListener('input',function(){
+  S.isoColor=this.value.replace('#','');$('iso-hex').value=S.isoColor;$('iso-sw').style.background=this.value;sched();
+});
+$('iso-hex').addEventListener('input',function(){
+  if(this.value.length===6){S.isoColor=this.value;$('iso-sw').style.background='#'+this.value;$('iso-cp').value='#'+this.value;sched();}
+});
+
+// Dimension sync
+$('width-cm').addEventListener('input',function(){$('length-cm').value=(this.value*imgAspect).toFixed(1);sched();});
+
+// Dot shape
+document.querySelectorAll('.shape-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.shape-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');S.dotShape=b.dataset.shape;sched();
+}));
+
+// Texture type buttons
+document.querySelectorAll('#tex-grid .fx-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#tex-grid .fx-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');S.texType=b.dataset.tex;sched();
+}));
+
+// Border type buttons
+document.querySelectorAll('#bdr-grid .fx-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#bdr-grid .fx-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');S.bdrType=b.dataset.bdr;sched();
+}));
+
+// View tabs
+document.querySelectorAll('.vtab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');S.view=t.dataset.view;showView(S.view);
+}));
+
+// Process
+$('proc-btn').addEventListener('click',run);
+function run(){
+  if(!S.file)return;
+  $('proc-btn').disabled=true;$('pbar').classList.add('active');$('spinner').classList.add('active');
+  const t=Date.now();
+  setTimeout(()=>{
+    try{
+      S.results=runPipeline($('src-img'),getP(),1500);
+      // Init paint canvas only when dimensions change (new image); keep strokes on re-process
+      if(paintOC.width!==S.results.mask.width||paintOC.height!==S.results.mask.height){
+        paintOC=document.createElement('canvas');
+        paintOC.width=S.results.mask.width;
+        paintOC.height=S.results.mask.height;
+        undoStack=[];brushOn=false;
+        $('brush-tog').classList.remove('on');
+        $('brush-undo').disabled=true;
+        paintOv.classList.remove('active');clearCursor(true);
+      }
+      showView(S.view);
+      $('dl-btn').disabled=false;$('dl-all').disabled=false;
+      $('footer-info').textContent=`done in ${((Date.now()-t)/1000).toFixed(1)}s`;
+    }catch(e){alert('Errore: '+e.message);console.error(e);}
+    finally{$('proc-btn').disabled=false;$('pbar').classList.remove('active');$('spinner').classList.remove('active');}
+  },20);
+}
+
+// PNG DPI injection (pHYs chunk at 300 DPI)
+const _crcT=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xedb88320^(c>>>1):c>>>1;t[n]=c;}return t;})();
+function _crc32(b,o,l){let c=0xffffffff;for(let i=o;i<o+l;i++)c=_crcT[(c^b[i])&0xff]^(c>>>8);return(c^0xffffffff)>>>0;}
+function injectDpi300(buf){
+  const src=new Uint8Array(buf);
+  const ppm=Math.round(300/0.0254); // pixels per metre at 300 DPI = 11811
+  const ch=new Uint8Array(21);
+  ch[3]=9;                                         // chunk data length = 9
+  ch[4]=112;ch[5]=72;ch[6]=89;ch[7]=115;          // "pHYs"
+  ch[8]=(ppm>>>24)&0xff;ch[9]=(ppm>>>16)&0xff;ch[10]=(ppm>>>8)&0xff;ch[11]=ppm&0xff; // X ppm
+  ch[12]=(ppm>>>24)&0xff;ch[13]=(ppm>>>16)&0xff;ch[14]=(ppm>>>8)&0xff;ch[15]=ppm&0xff; // Y ppm
+  ch[16]=1;                                        // unit = metre
+  const crc=_crc32(ch,4,13);
+  ch[17]=(crc>>>24)&0xff;ch[18]=(crc>>>16)&0xff;ch[19]=(crc>>>8)&0xff;ch[20]=crc&0xff;
+  // Insert after IHDR (PNG sig 8b + IHDR chunk 25b = offset 33)
+  const out=new Uint8Array(src.length+21);
+  out.set(src.slice(0,33),0);out.set(ch,33);out.set(src.slice(33),54);
+  return out.buffer;
+}
+
+// Export at 300 DPI for the specified print width, never upscaling
+function dlView(v){
+  if(!S.file)return;
+  $('footer-info').textContent='preparazione export 300 DPI…';
+  setTimeout(()=>{
+    try{
+      const p=getP();
+      const src=$('src-img');
+      const sw=src.naturalWidth,sh=src.naturalHeight;
+      // Export at exactly the 300 DPI equivalent of the configured print width
+      const exportW=Math.round(p.outputWidthCm/2.54*300);
+      // maxPx such that sc = exportW/sw (allows upscale if user set larger cm)
+      const maxPxExport=Math.round(exportW*Math.max(sw,sh)/sw);
+      const full=runPipeline(src,p,maxPxExport,true);
+      let canvas=full[v];
+      if(paintOC.width&&(v==='halftone'||v==='alpha'||v==='shirt')){
+        const fw=canvas.width,fh=canvas.height;
+        const scaledP=document.createElement('canvas');scaledP.width=fw;scaledP.height=fh;
+        scaledP.getContext('2d').drawImage(paintOC,0,0,fw,fh);
+        if(v==='halftone')      canvas=buildHalftoneWithPaint(full,scaledP,p);
+        else if(v==='alpha')    canvas=buildAlphaWithPaint(full,scaledP,p);
+        else if(v==='shirt')    canvas=buildShirtWithPaint(full,scaledP,p);
+      }
+      canvas.toBlob(blob=>{
+        blob.arrayBuffer().then(buf=>{
+          const patched=injectDpi300(buf);
+          const a=document.createElement('a');
+          a.href=URL.createObjectURL(new Blob([patched],{type:'image/png'}));
+          a.download=`halftonix_${v}.png`;
+          document.body.appendChild(a);a.click();document.body.removeChild(a);
+          $('footer-info').textContent=`export ${canvas.width}×${canvas.height}px @ 300 DPI`;
+        });
+      },'image/png');
+    }catch(e){alert('Errore export: '+e.message);}
+  },20);
+}
+// ── Print presets ──────────────────────────────────────
+const PRINT_PRESETS=[
+  {id:'dtg-white',tag:'DTG',name:'Base Bianca',
+   lpi:52,angle:45,inkSpread:35,cleanPx:1,blackLevel:5,midtoneLevel:80,whiteLevel:8,saturation:125,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:30},
+  {id:'dtg-black',tag:'DTG',name:'Base Nera',
+   lpi:42,angle:45,inkSpread:75,cleanPx:2,blackLevel:3,midtoneLevel:120,whiteLevel:5,saturation:130,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:30},
+  {id:'dtf-white',tag:'DTF',name:'Base Bianca',
+   lpi:62,angle:45,inkSpread:22,cleanPx:1,blackLevel:8,midtoneLevel:75,whiteLevel:10,saturation:118,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:30},
+  {id:'dtf-black',tag:'DTF',name:'Base Nera',
+   lpi:52,angle:45,inkSpread:55,cleanPx:2,blackLevel:5,midtoneLevel:105,whiteLevel:6,saturation:125,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:30},
+  {id:'dtf-bw',tag:'DTF',name:'B&W',
+   lpi:58,angle:45,inkSpread:18,cleanPx:2,blackLevel:15,midtoneLevel:130,whiteLevel:10,saturation:100,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:25},
+  {id:'dtf-logo',tag:'DTF',name:'Logo',
+   lpi:75,angle:22,inkSpread:8,cleanPx:8,blackLevel:5,midtoneLevel:50,whiteLevel:10,saturation:115,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:12},
+  {id:'dtf-text',tag:'DTF',name:'Testo/Lettering',
+   lpi:78,angle:45,inkSpread:5,cleanPx:10,blackLevel:2,midtoneLevel:50,whiteLevel:10,saturation:110,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:20},
+  {id:'dtf-portrait',tag:'DTF',name:'Ritratto',
+   lpi:60,angle:45,inkSpread:20,cleanPx:1,blackLevel:10,midtoneLevel:95,whiteLevel:8,saturation:120,
+   reds:55,yellows:70,greens:35,cyans:40,blues:10,magentas:65,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:22},
+  {id:'screen-1c',tag:'SCREEN',name:'1 Colore',
+   lpi:47,angle:22,inkSpread:15,cleanPx:5,blackLevel:20,midtoneLevel:70,whiteLevel:15,saturation:100,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:28},
+  {id:'streetwear',tag:'STYLE',name:'Streetwear Bold',
+   lpi:45,angle:45,inkSpread:28,cleanPx:3,blackLevel:12,midtoneLevel:80,whiteLevel:10,saturation:130,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:0,waveFrequency:0,dotShape:'circle',widthCm:28},
+  {id:'vintage',tag:'STYLE',name:'Vintage Worn',
+   lpi:30,angle:15,inkSpread:55,cleanPx:5,blackLevel:8,midtoneLevel:110,whiteLevel:8,saturation:88,
+   reds:40,yellows:60,greens:40,cyans:60,blues:20,magentas:80,waveStrength:22,waveFrequency:25,dotShape:'circle',widthCm:28},
+];
+
+function applyPrintPreset(p){
+  const sv=(id,val,lbl,fmt)=>{const e=$(id);if(!e)return;e.value=val;const l=$(lbl);if(l&&fmt)l.textContent=fmt(val);};
+  $('width-cm').value=p.widthCm;$('length-cm').value=(p.widthCm*imgAspect).toFixed(1);
+  sv('reds',p.reds,'rv-reds',v=>v+'%');sv('yellows',p.yellows,'rv-yellows',v=>v+'%');
+  sv('greens',p.greens,'rv-greens',v=>v+'%');sv('cyans',p.cyans,'rv-cyans',v=>v+'%');
+  sv('blues',p.blues,'rv-blues',v=>v+'%');sv('magentas',p.magentas,'rv-magentas',v=>v+'%');
+  sv('black-lv',p.blackLevel,'blk-v',v=>v+'%');
+  sv('mid-lv',p.midtoneLevel,'mid-v',v=>v+'%');
+  sv('wht-lv',p.whiteLevel,'wht-v',v=>v+'%');
+  sv('lpi',p.lpi,'rv-lpi',v=>+v>=80?'CONT.':v+' LPI');
+  sv('angle',p.angle,'rv-angle',v=>v+'°');
+  sv('ink-spread',p.inkSpread,'rv-spread',v=>v+'%');
+  sv('wave-strength',p.waveStrength,'rv-wave-str',v=>v+'%');
+  sv('wave-freq',p.waveFrequency,'rv-wave-freq',v=>v+'%');
+  sv('clean-px',p.cleanPx,'rv-clean',v=>v+'px');
+  sv('saturation',p.saturation,'rv-sat',v=>v+'%');
+  S.dotShape=p.dotShape;
+  document.querySelectorAll('.shape-btn').forEach(b=>b.classList.toggle('active',b.dataset.shape===p.dotShape));
+  sched();
+}
+
+(function(){
+  const grid=$('preset-grid');
+  PRINT_PRESETS.forEach(p=>{
+    const btn=document.createElement('div');
+    btn.className='preset-btn';
+    btn.dataset.pid=p.id;
+    btn.innerHTML='<span class="ptag '+p.tag.toLowerCase()+'">'+p.tag+'</span>'+p.name;
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      applyPrintPreset(p);
+    });
+    grid.appendChild(btn);
+  });
+})();
+
+$('dl-btn').addEventListener('click',()=>dlView(S.view));
+$('dl-all').addEventListener('click',async()=>{
+  if(!S.file)return;
+  for(const v of['original','mask','halftone','alpha','shirt']){
+    dlView(v);await new Promise(r=>setTimeout(r,400));
+  }
+});
+</script>
+</body>
+</html>
